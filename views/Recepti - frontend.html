@@ -276,57 +276,78 @@
   </style>
 </head>
 <body>
+  <!-- GLAVA STRAN -->
   <div class="container">
     <header>
-      <h1>👩‍🍳 Recepti za vsak dan</h1>
+      <h1>Recepti za vsak dan</h1>
       <p>Delite in odkrivajte najboljše recepte!</p>
     </header>
 
-    <button id="add-recipe-btn">➕ Dodaj nov recept</button>
+    <!-- Gumb za prikaz obrazca -->
+    <button id="add-recipe-btn">Dodaj nov recept</button>
 
+    <!-- Dodajanje recepta -->
     <form id="recipe-form">
       <div class="form-group">
         <label for="title">Naslov recepta</label>
         <input type="text" id="title" required placeholder="Npr. Čokoladni muffini">
       </div>
+
+      <!-- Opis recepta -->
       <div class="form-group">
         <label for="description">Kratek opis</label>
         <textarea id="description" required placeholder="Npr. Mehki in čokoladni, idealni za zajtrk."></textarea>
       </div>
+
+      <!-- Sestavine -->
       <div class="form-group">
         <label for="ingredients">Sestavine (vsaka v svoji vrstici)</label>
         <textarea id="ingredients" required placeholder="Npr.&#10;2 jajci&#10;100g moke&#10;50g čokolade"></textarea>
       </div>
+
+      <!-- Navodila -->
       <div class="form-group">
         <label for="instructions">Postopek</label>
         <textarea id="instructions" required placeholder="Npr.&#10;1. Zmešaj jajca in sladkor.&#10;2. Dodaj moko..."></textarea>
       </div>
+
+      <!-- URL slike (po želji) -->
       <div class="form-group">
         <label for="image">URL slike (neobvezno)</label>
         <input type="url" id="image" placeholder="https://...">
       </div>
+
+      <!-- Gumba shrani in prekliči -->
       <button type="submit">Shrani recept</button>
       <button type="button" id="cancel-recipe-btn">Prekliči</button>
     </form>
 
+    <!-- Prikaz vseh receptov -->
     <h2 style="margin: 30px 0 15px;">Vsi recepti</h2>
     <div class="recipes-container" id="recipes-container">
       </div>
   </div>
 
+  <!-- Okno za prikaz celotnega recepta -->
   <div id="recipe-modal" class="modal">
     <div class="modal-content">
+
+      <!-- Gumb X za zapiranje -->
       <span class="close-modal">&times;</span>
       <img id="modal-image" class="modal-image" src="" alt="">
       <h2 id="modal-title" class="modal-title">Naslov</h2>
       <p id="modal-description"></p>
       <div class="modal-rating" id="modal-rating"></div>
+
+      <!-- Sestavine -->
       <div class="modal-section">
-        <h3>📋 Sestavine</h3>
+        <h3>Sestavine</h3>
         <ul id="modal-ingredients"></ul>
       </div>
+
+      <!-- Navodila -->
       <div class="modal-section">
-        <h3>📝 Postopek</h3>
+        <h3>Postopek</h3>
         <ol id="modal-instructions"></ol>
       </div>
       <div class="recipe-meta" id="modal-date"></div>
@@ -334,6 +355,8 @@
   </div>
 
   <script>
+
+    //Pridonivanje elementov
     const recipeForm = document.getElementById('recipe-form');
     const addRecipeBtn = document.getElementById('add-recipe-btn');
     const recipesContainer = document.getElementById('recipes-container');
@@ -341,7 +364,9 @@
     const closeModalBtn = document.querySelector('.close-modal');
     const cancelRecipeBtn = document.getElementById('cancel-recipe-btn');
 
+    //Prikaz/skritje obrazca
     addRecipeBtn.addEventListener('click', () => {
+      // Če je skrit se pokaže, sicer se skrije
       recipeForm.style.display = recipeForm.style.display === 'none' ? 'block' : 'none';
     });
 
@@ -350,6 +375,7 @@
       recipeForm.reset();
     });
 
+    //Zapiranje okna za celotan prikaz
     closeModalBtn.addEventListener('click', () => {
       recipeModal.style.display = 'none';
     });
@@ -360,6 +386,7 @@
       }
     });
 
+    //Nalaganje receptov iz strežnika
     async function loadRecipes() {
       try {
         const res = await fetch('/api/recipes');
@@ -372,6 +399,7 @@
       }
     }
 
+    //Dodajanje novega recepta
     async function addRecipe(title, description, ingredients, instructions, imageUrl) {
       try {
         const res = await fetch('/api/recipes', {
@@ -387,6 +415,7 @@
       }
     }
 
+    //Brisanje recepta
     async function deleteRecipe(id) {
       if (!confirm('Ali res želite izbrisati ta recept?')) return false;
       try {
@@ -398,6 +427,7 @@
       }
     }
 
+    //Ocenjevanje recepta
     async function rateRecipe(id, rating) {
       try {
         const res = await fetch(`/api/recipes/${id}/rate`, {
@@ -413,23 +443,27 @@
       }
     }
 
+    //Shranjevanje recepta iz obrazca
     recipeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      //Branje podatkov iz obrazca
       const title = document.getElementById('title').value.trim();
       const description = document.getElementById('description').value.trim();
       const ingredients = document.getElementById('ingredients').value.trim().split('\n').filter(i => i);
       const instructions = document.getElementById('instructions').value.trim().split('\n').filter(i => i);
       const imageUrl = document.getElementById('image').value.trim() || 'https://via.placeholder.com/300x180?text=No+Image';
 
+      //Pošiljanje podatkov na API
       const newRecipe = await addRecipe(title, description, ingredients, instructions, imageUrl);
       if (newRecipe) {
         recipeForm.reset();
         recipeForm.style.display = 'none';
-        loadRecipes();
+        loadRecipes(); //Osveži seznam receptov
       }
     });
 
+    //Prikaz receptov na karticah
     function renderRecipes(recipes) {
       recipesContainer.innerHTML = '';
 
@@ -441,12 +475,14 @@
         const recipeCard = document.createElement('div');
         recipeCard.className = 'recipe-card';
 
+        //Notranja vsebina kartice recepta v HTML
         recipeCard.innerHTML = `
           <img class="recipe-image" src="${recipe.imageUrl}" alt="${recipe.title}">
           <div class="recipe-content">
             <h3 class="recipe-title">${recipe.title}</h3>
             <p class="recipe-description">${recipe.description}</p>
             <div class="rating">
+              <!-- Zvezdice za oceno -->
               <div class="stars" data-recipe-id="${recipe._id}">
                 <span data-value="1">☆</span>
                 <span data-value="2">☆</span>
@@ -454,7 +490,7 @@
                 <span data-value="4">☆</span>
                 <span data-value="5">☆</span>
               </div>
-              <div class="average-rating">${avgRating} ⭐</div>
+              <div class="average-rating">${avgRating} </div>
             </div>
             <div class="recipe-meta">Dodano: ${new Date(recipe.createdAt).toLocaleDateString('sl-SI')}</div>
             <div class="recipe-actions">
@@ -467,6 +503,7 @@
         recipesContainer.appendChild(recipeCard);
       });
 
+      //Delovanje ocenjevanja receptov
       document.querySelectorAll('.stars span').forEach(star => {
         star.addEventListener('click', async function() {
           const recipeId = this.closest('.stars').dataset.recipeId;
@@ -476,6 +513,7 @@
         });
       });
 
+      //Prikazovanje okenca recepta
       document.querySelectorAll('.btn-details').forEach(btn => {
         btn.addEventListener('click', function() {
           const recipeId = this.dataset.recipeId;
@@ -484,6 +522,7 @@
         });
       });
 
+      //Brisanje receptov
       document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', async function() {
           const recipeId = this.dataset.recipeId;
@@ -493,6 +532,8 @@
       });
     }
 
+    //Ta del pomagal ChatGPT
+    //Prikaz okna recepta
     function showRecipeModal(recipe) {
       document.getElementById('modal-image').src = recipe.imageUrl;
       document.getElementById('modal-title').textContent = recipe.title;
@@ -503,6 +544,7 @@
         : 0;
       document.getElementById('modal-rating').textContent = `⭐ Povprečna ocena: ${avgRating} (${recipe.ratings.length} ocen)`;
 
+      //Sestavine
       const ingredientsList = document.getElementById('modal-ingredients');
       ingredientsList.innerHTML = '';
       recipe.ingredients.forEach(ingredient => {
@@ -511,6 +553,7 @@
         ingredientsList.appendChild(li);
       });
 
+      //Navodila
       const instructionsList = document.getElementById('modal-instructions');
       instructionsList.innerHTML = '';
       recipe.instructions.forEach(instruction => {
@@ -519,11 +562,13 @@
         instructionsList.appendChild(li);
       });
 
+      //Datum dodajanja
       document.getElementById('modal-date').textContent = `Dodano: ${new Date(recipe.createdAt).toLocaleDateString('sl-SI')}`;
 
       recipeModal.style.display = 'block';
     }
 
+    //Nalaganje receptov ob zagonu strani
     loadRecipes();
   </script>
 </body>
